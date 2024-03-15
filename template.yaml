@@ -5,8 +5,35 @@ Description: |
   Sample SAM Template for commmunet-app
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 600
 Resources:
+  communetiam:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: communetiamPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - s3:*
+                Resource: arn:aws:s3:::communet-bucket/*
   UploadFileFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -15,38 +42,41 @@ Resources:
       Runtime: python3.10
       Architectures:
         - x86_64
+      Role: !GetAtt communetiam.Arn
       Events:
-        HelloWorld:
+        Upload:
           Type: Api
           Properties:
             Path: /link
             Method: post
-            Auth:
-              Authorizer: NONE
-
   ExtractEmailFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: hello_world/
-      Handler: uploadFile.lambda_handler
+      Handler: extractEmail.lambda_handler
       Runtime: python3.10
       Architectures:
         - x86_64
+      Role: !GetAtt communetiam.Arn
       Events:
-        HelloWorld:
+        Extract:
           Type: Api
           Properties:
             Path: /parser
             Method: post
-            Auth:
-              Authorizer: NONE
 Outputs:
-  HelloWorldApi:
+  UploadFileFunctionAPI:
     Description: API Gateway endpoint URL for Prod stage for Hello World function
-    Value: !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/
-  HelloWorldFunction:
+    Value: !Sub https://communetiam.execute-api.${AWS::Region}.amazonaws.com/Prod/link
+  UploadFileFunction:
     Description: Hello World Lambda Function ARN
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
+    Value: !GetAtt UploadFileFunction.Arn
+  communetiam:
     Description: Implicit IAM Role created for Hello World function
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+    Value: !GetAtt communetiam.Arn
+  ExtractEmailAPI:
+    Description: API Gateway endpoint URL for Prod stage for Hello World function
+    Value: !Sub https://communetiam.execute-api.${AWS::Region}.amazonaws.com/Prod/parser
+  ExtractEmailFunction:
+    Description: Hello World Lambda Function ARN
+    Value: !GetAtt UploadFileFunction.Arn
