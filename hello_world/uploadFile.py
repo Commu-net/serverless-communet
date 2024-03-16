@@ -15,9 +15,14 @@ def lambda_handler(event, context):
     
     if(object_name is None):
         return {
-            "statusCode" : 404,
-            "body" : "No file name found"
-        }
+          'statusCode': 200,
+          'headers': {
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET'
+            },
+          'body': json.dumps("user not found")
+          }
     
     
     s3 = boto3.client("s3")
@@ -30,11 +35,14 @@ def lambda_handler(event, context):
         object_name=object_name)
 
     return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": url,
-        }),
-    }
+          'statusCode': 200,
+          'headers': {
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET'
+            },
+          'body': json.dumps(url)
+          }
 
 
 

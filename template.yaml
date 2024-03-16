@@ -34,36 +34,56 @@ Resources:
                 Action:
                   - s3:*
                 Resource: arn:aws:s3:::communet-bucket/*
+  UploadGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: '''POST, GET'''
+        AllowHeaders: '''*'''
+        AllowOrigin: '''*'''
+        MaxAge: '''600'''
   UploadFileFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: hello_world/
-      Handler: uploadFile.lambda_handler
-      Runtime: python3.10
-      Architectures:
-        - x86_64
-      Role: !GetAtt communetiam.Arn
       Events:
         Upload:
           Type: Api
           Properties:
             Path: /link
             Method: post
-  ExtractEmailFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: hello_world/
-      Handler: extractEmail.lambda_handler
+            RestApiId: !Ref UploadGateway
       Runtime: python3.10
+      CodeUri: hello_world/
+      Handler: uploadFile.lambda_handler
       Architectures:
         - x86_64
       Role: !GetAtt communetiam.Arn
+  ExtractGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: '''POST, GET'''
+        AllowHeaders: '''*'''
+        AllowOrigin: '''*'''
+        MaxAge: '''600'''
+  ExtractEmailFunction:
+    Type: AWS::Serverless::Function
+    Properties:
       Events:
-        Extract:
+        Upload:
           Type: Api
           Properties:
             Path: /parser
             Method: post
+            RestApiId: !Ref ExtractGateway
+      Runtime: python3.10
+      CodeUri: hello_world/
+      Handler: extractEmail.lambda_handler
+      Architectures:
+        - x86_64
+      Role: !GetAtt communetiam.Arn
 Outputs:
   UploadFileFunctionAPI:
     Description: API Gateway endpoint URL for Prod stage for Hello World function
@@ -79,4 +99,4 @@ Outputs:
     Value: !Sub https://communetiam.execute-api.${AWS::Region}.amazonaws.com/Prod/parser
   ExtractEmailFunction:
     Description: Hello World Lambda Function ARN
-    Value: !GetAtt UploadFileFunction.Arn
+    Value: !GetAtt ExtractEmailFunction.Arn

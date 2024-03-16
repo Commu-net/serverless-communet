@@ -14,17 +14,27 @@ def lambda_handler(event,context):
         
         if user_id is None or len(user_id) == 0:
             return {
-                "statusCode" : 404,
-                "body" : "No object name"
-            }
+          'statusCode': 200,
+          'headers': {
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET'
+            },
+          'body': json.dumps('not found user')
+          }
         
         print(object_name)
 
         if object_name is None or len(object_name) == 0:
             return {
-                "statusCode" : 404,
-                "body" : "No user email"
-            }
+          'statusCode': 200,
+          'headers': {
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET'
+            },
+          'body': json.dumps('not found object')
+          }
 
 
         s3 = boto3.client("s3")
@@ -36,17 +46,27 @@ def lambda_handler(event,context):
         
         
         return {
-            "statusCode" : 200,
-            "body" : "done"
-        }
+          'statusCode': 200,
+          'headers': {
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET'
+            },
+          'body': json.dumps('done!')
+          }
             
     except Exception as e:
         
         print(str(e))
         return {
-            "statusCode" : 500,
-            "body" : str(e)
-        }
+          'statusCode': 200,
+          'headers': {
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET'
+            },
+          'body': json.dumps(str(e))
+          }
         
         
     
